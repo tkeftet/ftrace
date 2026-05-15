@@ -1,5 +1,8 @@
-import { create } from 'zustand';
-import { notificationApi, type AppNotification } from '@/api/endpoints/notification.api';
+import { create } from "zustand";
+import {
+  notificationApi,
+  type AppNotification,
+} from "@/api/endpoints/notification.api";
 
 interface NotificationsState {
   items: AppNotification[];
@@ -11,7 +14,7 @@ interface NotificationsState {
   markAllRead: () => Promise<void>;
 }
 
-export const useNotificationsStore = create<NotificationsState>((set, get) => ({
+export const useNotificationsStore = create<NotificationsState>((set) => ({
   items: [],
   unreadCount: 0,
   loading: false,
