@@ -11,6 +11,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { TenantSidebar, TENANT_DRAWER_WIDTH } from "./TenantSidebar";
 import { TenantTopbar } from "./TenantTopbar";
 import { TENANT_NAV_ITEMS } from "./tenantNavItems";
@@ -20,6 +21,7 @@ import { useStaffSocket } from "@/hooks/useStaffSocket";
 import { useCallingTablesStore } from "@/store/callingTablesStore";
 import { useNotificationsStore } from "@/store/notificationsStore";
 import { playCallSound } from "@/utils/playCallSound";
+import { orderKeys } from "@/api/queryKeys";
 
 export function TenantDashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -29,6 +31,7 @@ export function TenantDashboardLayout() {
   const navigate = useNavigate();
   const role = useAuthStore((s) => s.user?.role) as StaffRole | undefined;
 
+  const queryClient = useQueryClient();
   const { addCall, removeCall } = useCallingTablesStore();
   const { fetch: fetchNotifications, prepend } = useNotificationsStore();
   const [callAlert, setCallAlert] = useState<string | null>(null);
@@ -37,7 +40,9 @@ export function TenantDashboardLayout() {
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
   useStaffSocket(useCallback((event, data) => {
-    if (event === "waiter:call") {
+    if (event === "order:created" || event === "order:updated" || event === "order:item-ready") {
+      queryClient.invalidateQueries({ queryKey: orderKeys.all });
+    } else if (event === "waiter:call") {
       const { tableId, tableNumber, tableLabel } = data as {
         tableId: string; tableNumber?: number; tableLabel?: string;
       };
@@ -54,7 +59,7 @@ export function TenantDashboardLayout() {
       // Re-fetch to get the real DB id so mark-read works
       fetchNotifications();
     }
-  }, [addCall, removeCall, prepend, fetchNotifications]));
+  }, [queryClient, addCall, removeCall, prepend, fetchNotifications]));
 
   const visibleNavItems = TENANT_NAV_ITEMS.filter(
     (item) => role && item.allowedRoles.includes(role),

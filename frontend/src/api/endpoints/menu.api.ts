@@ -72,6 +72,7 @@ export interface ParseMenuResponse {
 export interface ImportConfirmResponse {
   message: string;
   createdCategories: string[];
+  reusedCategories: string[];
   createdItems: string[];
 }
 
@@ -102,8 +103,8 @@ export const menuApi = {
 
   deleteItem: (id: string) => axiosInstance.delete(`/menu/items/${id}`),
 
-  // PDF Import
-  parsePdf: (file: File) => {
+  // Menu Import (PDF, Word, or image)
+  parseMenu: (file: File) => {
     const formData = new FormData();
     formData.append("menu", file);
     return axiosInstance.post<ParseMenuResponse>(

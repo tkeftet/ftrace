@@ -5,7 +5,7 @@ import { menuKeys } from "@/api/queryKeys";
 
 export function useParsePdfMenu() {
   return useMutation({
-    mutationFn: (file: File) => menuApi.parsePdf(file).then((r) => r.data),
+    mutationFn: (file: File) => menuApi.parseMenu(file).then((r) => r.data),
   });
 }
 

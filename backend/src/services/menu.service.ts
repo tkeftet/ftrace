@@ -24,7 +24,9 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(tenantId: string, categoryId: string) {
-  await MenuCategory.findOneAndUpdate({ _id: categoryId, tenantId }, { isActive: false });
+  const category = await MenuCategory.findOneAndDelete({ _id: categoryId, tenantId });
+  if (!category) throw createError('Category not found', 404);
+  await MenuItem.deleteMany({ tenantId, category: category._id });
 }
 
 /* ── Items ───────────────────────────────────────────────────── */
@@ -45,5 +47,6 @@ export async function updateItem(tenantId: string, itemId: string, data: Record<
 }
 
 export async function deleteItem(tenantId: string, itemId: string) {
-  await MenuItem.findOneAndUpdate({ _id: itemId, tenantId }, { isAvailable: false });
+  const item = await MenuItem.findOneAndDelete({ _id: itemId, tenantId });
+  if (!item) throw createError('Item not found', 404);
 }
