@@ -1,0 +1,75 @@
+# Render blueprint — deploys the backend (Node web service) and the frontend
+# (static site) as two separate services from this monorepo.
+#
+# After the first deploy, confirm the generated URLs in the Render dashboard.
+# If a service name was taken, Render appends a suffix (e.g. ftrace-backend-xyz)
+# and you must update the three cross-referencing URLs below to match:
+#   - backend  CORS_ORIGIN          -> the frontend URL
+#   - frontend VITE_API_BASE_URL    -> the backend URL + /api
+#   - frontend VITE_SOCKET_URL      -> the backend URL
+#
+# Secrets are marked `sync: false`: Render will prompt for them on deploy and
+# never store them in this file / git. Fill them in the dashboard.
+
+services:
+  # ── Backend: Express + Socket.io API ──────────────────────────────────────
+  - type: web
+    name: ftrace-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    region: frankfurt
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Render injects PORT automatically — the app reads process.env.PORT.
+      - key: CORS_ORIGIN
+        value: https://ftrace-frontend.onrender.com
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MONGO_URI
+        sync: false
+      - key: SUPER_ADMIN_EMAIL
+        sync: false
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+
+  # ── Frontend: Vite SPA served as a static site ────────────────────────────
+  # A static site is the correct Render primitive for a `vite build` output:
+  # free, CDN-backed, and the rewrite rule below makes client-side routing work
+  # on hard refresh / deep links. The VITE_* vars are baked in at BUILD time.
+  - type: web
+    name: ftrace-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://ftrace-backend.onrender.com/api
+      - key: VITE_SOCKET_URL
+        value: https://ftrace-backend.onrender.com
+      # Multi-tenant subdomains (e.g. pixelandplay.yourdomain.com) only resolve
+      # once you point a CUSTOM domain at this service. Set this to your apex
+      # domain (no scheme, no subdomain) and rebuild. Until then, leave it unset
+      # and address tenants via ?tenant=slug. On the default *.onrender.com URL
+      # subdomains cannot work, so keep this commented out there.
+      # - key: VITE_BASE_DOMAIN
+      #   value: yourdomain.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

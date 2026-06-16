@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { corsOptions } from './config/cors';
+import { isProduction } from './config/env';
 import { tenantRateLimiter } from './middleware/rateLimiter';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -18,6 +19,15 @@ import sectionRoutes from './routes/section.routes';
 import floorRoutes from './routes/floor.routes';
 
 const app = express();
+
+/* ── Reverse proxy ── */
+// Render (and most PaaS) put the app behind a single proxy hop that sets
+// X-Forwarded-For/Proto. Trust that one hop so req.ip reflects the real
+// client IP — required for the IP-keyed rate limiters and to stop
+// express-rate-limit from throwing ERR_ERL_UNEXPECTED_X_FORWARDED_FOR.
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
 
 /* ── Global middleware ── */
 app.use(cors(corsOptions));
