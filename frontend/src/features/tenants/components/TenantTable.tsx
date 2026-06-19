@@ -15,6 +15,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import type { Tenant } from "../types";
@@ -41,6 +42,7 @@ interface Props {
   onDelete: (id: string) => void;
   onView: (id: string) => void;
   onEdit: (id: string) => void;
+  onVisit: (slug: string) => void;
 }
 
 export function TenantTable({
@@ -52,6 +54,7 @@ export function TenantTable({
   onDelete,
   onView,
   onEdit,
+  onVisit,
 }: Props) {
   const startIndex = page * 10 + 1;
   const endIndex = Math.min(page * 10 + tenants.length, total);
@@ -153,6 +156,14 @@ export function TenantTable({
                     </TableCell>
 
                     <TableCell align="right">
+                      <IconButton
+                        size="small"
+                        title="Visit tenant login"
+                        sx={{ color: "success.main", mr: 0.5 }}
+                        onClick={() => onVisit(tenant.slug)}
+                      >
+                        <OpenInNewIcon fontSize="small" />
+                      </IconButton>
                       <IconButton
                         size="small"
                         title="View details"

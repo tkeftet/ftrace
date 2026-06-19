@@ -18,6 +18,7 @@ import BusinessIcon from "@mui/icons-material/Business";
 
 import { useTenants, useDeleteTenant } from "../hooks";
 import { useSnackbar } from "@/hooks/useSnackbar";
+import { getTenantLoginUrl } from "@/utils/tenant";
 import type { Tenant } from "../types";
 
 import { StatCard } from "@/components/common/StatCard";
@@ -76,6 +77,10 @@ export default function Tenants() {
       setEditTenant(found);
       setEditDialogOpen(true);
     }
+  };
+
+  const handleVisit = (slug: string) => {
+    window.open(getTenantLoginUrl(slug), "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -178,6 +183,7 @@ export default function Tenants() {
                   onDelete={(id) => setDeleteId(id)}
                   onView={(id) => navigate(`/dashboard/tenants/${id}`)}
                   onEdit={handleOpenEdit}
+                  onVisit={handleVisit}
                 />
               ))
             )}
@@ -192,6 +198,7 @@ export default function Tenants() {
             onDelete={(id) => setDeleteId(id)}
             onView={(id) => navigate(`/dashboard/tenants/${id}`)}
             onEdit={handleOpenEdit}
+            onVisit={handleVisit}
           />
         ))}
 

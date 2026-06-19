@@ -10,6 +10,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import type { Tenant } from "../types";
 import { resolveOwner } from "../utils";
 import { TenantAvatar } from "./TenantAvatar";
@@ -19,9 +20,16 @@ interface Props {
   onDelete: (id: string) => void;
   onView: (id: string) => void;
   onEdit: (id: string) => void;
+  onVisit: (slug: string) => void;
 }
 
-export function TenantMobileCard({ tenant, onDelete, onView, onEdit }: Props) {
+export function TenantMobileCard({
+  tenant,
+  onDelete,
+  onView,
+  onEdit,
+  onVisit,
+}: Props) {
   const owner = resolveOwner(tenant.owner);
 
   return (
@@ -74,6 +82,21 @@ export function TenantMobileCard({ tenant, onDelete, onView, onEdit }: Props) {
         </Box>
 
         <Stack direction="row" spacing={1}>
+          <Button
+            fullWidth
+            variant="outlined"
+            size="small"
+            startIcon={<OpenInNewIcon fontSize="small" />}
+            onClick={() => onVisit(tenant.slug)}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              color: "success.main",
+              borderColor: "success.light",
+            }}
+          >
+            Visit
+          </Button>
           <Button
             fullWidth
             variant="outlined"
