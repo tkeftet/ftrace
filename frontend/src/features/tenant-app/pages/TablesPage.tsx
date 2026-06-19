@@ -10,6 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import QrCode2Icon from "@mui/icons-material/QrCode2";
 import TableBarIcon from "@mui/icons-material/TableBar";
 import GridViewIcon from "@mui/icons-material/GridView";
 import MapIcon from "@mui/icons-material/Map";
@@ -19,6 +20,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import PeopleIcon from "@mui/icons-material/People";
 
 import { TableFormDialog } from "../components/tables/TableFormDialog";
+import { TableQRCodesDialog } from "../components/tables/TableQRCodesDialog";
 import { FloorPlan } from "../components/tables/FloorPlan";
 import { FloorFormDialog } from "../components/tables/FloorFormDialog";
 import { SectionFormDialog } from "../components/tables/SectionFormDialog";
@@ -30,6 +32,7 @@ import { AppSnackbar } from "@/components/common/AppSnackbar";
 import { useSnackbar } from "@/hooks/useSnackbar";
 import { useAuthStore } from "@/store/authStore";
 import { useCallingTablesStore } from "@/store/callingTablesStore";
+import { getTenantSlug } from "@/utils/tenant";
 import type { Table } from "@/api/endpoints/table.api";
 import type { Section } from "@/api/endpoints/section.api";
 import type { Floor } from "@/api/endpoints/floor.api";
@@ -218,6 +221,7 @@ export default function TablesPage() {
   const deleteFloor = useDeleteFloor();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<Table | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Table | null>(null);
 
@@ -312,27 +316,50 @@ export default function TablesPage() {
         <Typography variant="h5" fontWeight={800} color="#b45309">
           Tables
         </Typography>
-        {canEdit && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            size="small"
-            onClick={() => { setEditingTable(null); setDialogOpen(true); }}
-            sx={{
-              bgcolor: "#b45309",
-              "&:hover": { bgcolor: "#92400e" },
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 700,
-              fontSize: 13,
-              px: 2,
-              py: 0.85,
-              boxShadow: "0 2px 8px rgba(26,58,92,0.25)",
-            }}
-          >
-            Add Table
-          </Button>
-        )}
+        <Box sx={{ display: "flex", gap: 1 }}>
+          {tables.length > 0 && (
+            <Button
+              variant="outlined"
+              startIcon={<QrCode2Icon />}
+              size="small"
+              onClick={() => setQrDialogOpen(true)}
+              sx={{
+                color: "#b45309",
+                borderColor: "#b45309",
+                "&:hover": { borderColor: "#92400e", bgcolor: "#fff7ed" },
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 700,
+                fontSize: 13,
+                px: 2,
+                py: 0.85,
+              }}
+            >
+              QR codes
+            </Button>
+          )}
+          {canEdit && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              size="small"
+              onClick={() => { setEditingTable(null); setDialogOpen(true); }}
+              sx={{
+                bgcolor: "#b45309",
+                "&:hover": { bgcolor: "#92400e" },
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 700,
+                fontSize: 13,
+                px: 2,
+                py: 0.85,
+                boxShadow: "0 2px 8px rgba(26,58,92,0.25)",
+              }}
+            >
+              Add Table
+            </Button>
+          )}
+        </Box>
       </Box>
 
       {/* ── Floor pills + view toggle ── */}
@@ -610,6 +637,12 @@ export default function TablesPage() {
         editingTable={editingTable}
         defaultFloorId={!editingTable && activeFloor !== "all" ? activeFloor : undefined}
         onSuccess={show}
+      />
+      <TableQRCodesDialog
+        open={qrDialogOpen}
+        onClose={() => setQrDialogOpen(false)}
+        tables={tables}
+        slug={getTenantSlug()}
       />
       <FloorFormDialog
         open={floorDialogOpen}

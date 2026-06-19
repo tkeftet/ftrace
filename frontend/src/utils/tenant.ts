@@ -77,23 +77,32 @@ export const clearTenantSlug = () =>
 export const isSuperAdminDomain = () => getTenantSlug() === null;
 
 /**
- * Builds the absolute URL to a tenant's login page (`/login` on the tenant's
- * own origin), resolving the right host for each environment:
- *   - prod (VITE_BASE_DOMAIN set):  https://<slug>.<baseDomain>/login
- *   - localhost dev:                http://<slug>.localhost:<port>/login
- *   - anything else (tunnels, etc): <current-origin>/login?tenant=<slug>
+ * Builds an absolute URL to `path` on a given tenant's origin, resolving the
+ * right host for each environment:
+ *   - prod (VITE_BASE_DOMAIN set):  https://<slug>.<baseDomain><path>
+ *   - localhost dev:                http://<slug>.localhost:<port><path>
+ *   - anything else (tunnels, etc): <current-origin><path> + ?tenant=<slug>
  * The query-param form is the universal fallback since getTenantSlug() reads
  * ?tenant= first.
  */
-export const getTenantLoginUrl = (slug: string): string => {
+const buildTenantUrl = (slug: string, path: string): string => {
   const { protocol, hostname, port, origin } = window.location;
   const base = import.meta.env.VITE_BASE_DOMAIN as string | undefined;
 
-  if (base) return `${protocol}//${slug}.${base}/login`;
+  if (base) return `${protocol}//${slug}.${base}${path}`;
 
   if (hostname.split(".").pop() === "localhost") {
-    return `${protocol}//${slug}.localhost${port ? `:${port}` : ""}/login`;
+    return `${protocol}//${slug}.localhost${port ? `:${port}` : ""}${path}`;
   }
 
-  return `${origin}/login?tenant=${encodeURIComponent(slug)}`;
+  const sep = path.includes("?") ? "&" : "?";
+  return `${origin}${path}${sep}tenant=${encodeURIComponent(slug)}`;
 };
+
+/** Absolute URL to a tenant's login page. */
+export const getTenantLoginUrl = (slug: string): string =>
+  buildTenantUrl(slug, "/login");
+
+/** Absolute URL a customer scans to order at a specific table. */
+export const getTableOrderUrl = (slug: string, tableId: string): string =>
+  buildTenantUrl(slug, `/order?tableId=${encodeURIComponent(tableId)}`);
