@@ -35,7 +35,14 @@ export const getTenantSlug = (): string | null => {
     // 2. Subdomain of the configured base domain (paid ngrok wildcard / custom domain)
     const suffix = `.${baseDomain}`;
     if (hostname.endsWith(suffix)) {
-      return hostname.slice(0, hostname.length - suffix.length) || null;
+      const sub = hostname.slice(0, hostname.length - suffix.length);
+      // "www" is the canonical apex alias, not a tenant. Multi-level subdomains
+      // (e.g. "www.riad21") aren't valid tenant slugs either. Treat both like the
+      // root domain: fall back to a ?tenant= slug persisted earlier in this tab.
+      if (!sub || sub === "www" || sub.includes(".")) {
+        return sessionStorage.getItem(SESSION_SLUG_KEY) ?? null;
+      }
+      return sub;
     }
 
     // 3. Exact base domain — rely on sessionStorage (set by ?tenant= earlier in this tab)
