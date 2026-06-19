@@ -30,8 +30,11 @@ services:
       - key: NODE_ENV
         value: production
       # Render injects PORT automatically — the app reads process.env.PORT.
+      # Apex domain entry auto-allows every tenant subdomain (cors.ts matches
+      # host.endsWith('.doomedgamesstudio.com')). The onrender URL is kept so the
+      # default Render frontend still works during DNS propagation / testing.
       - key: CORS_ORIGIN
-        value: https://ftrace-frontend.onrender.com
+        value: https://doomedgamesstudio.com,https://ftrace-frontend.onrender.com
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRES_IN
@@ -67,13 +70,12 @@ services:
         value: https://ftrace-backend.onrender.com/api
       - key: VITE_SOCKET_URL
         value: https://ftrace-backend.onrender.com
-      # Multi-tenant subdomains (e.g. pixelandplay.yourdomain.com) only resolve
-      # once you point a CUSTOM domain at this service. Set this to your apex
-      # domain (no scheme, no subdomain) and rebuild. Until then, leave it unset
-      # and address tenants via ?tenant=slug. On the default *.onrender.com URL
-      # subdomains cannot work, so keep this commented out there.
-      # - key: VITE_BASE_DOMAIN
-      #   value: yourdomain.com
+      # Apex domain for multi-tenant subdomain resolution (utils/tenant.ts):
+      # riad21.doomedgamesstudio.com -> slug "riad21". Baked in at build time,
+      # so changing it requires a frontend rebuild. Requires the wildcard custom
+      # domain + DNS to be set up on this service (see notes below).
+      - key: VITE_BASE_DOMAIN
+        value: doomedgamesstudio.com
     routes:
       - type: rewrite
         source: /*
